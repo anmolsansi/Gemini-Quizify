@@ -48,6 +48,8 @@ class ChromaCollectionCreator:
         Note: Ensure to replace placeholders like [Your code here] with actual implementation code as per the instructions above.
         """
         
+        state_of_the_union = None
+        
         # Step 1: Check for processed documents
         if len(self.processor.pages) == 0:
             st.error("No documents found!", icon="🚨")
@@ -58,6 +60,18 @@ class ChromaCollectionCreator:
         # https://python.langchain.com/docs/modules/data_connection/document_transformers/character_text_splitter
         # [Your code here for splitting documents]
         
+        text_splitter = CharacterTextSplitter(
+                        separator=". ",
+                        chunk_size=1000,
+                        chunk_overlap=200,
+                        length_function=len
+                    )
+        
+        texts = []
+        for doc in self.processor.pages:
+            texts.extend(text_splitter.split_text(doc))
+            
+        
         if texts is not None:
             st.success(f"Successfully split pages to {len(texts)} documents!", icon="✅")
 
@@ -65,6 +79,11 @@ class ChromaCollectionCreator:
         # https://docs.trychroma.com/
         # Create a Chroma in-memory client using the text chunks and the embeddings model
         # [Your code here for creating Chroma collection]
+        docs = []
+        for text in texts:
+            docs.append(Document(page_content=text))
+        
+        self.db = Chroma.from_documents(docs, self.embed_model)
         
         if self.db:
             st.success("Successfully created Chroma Collection!", icon="✅")
@@ -93,7 +112,7 @@ if __name__ == "__main__":
     
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR PROJECT ID HERE",
+        "project": "gemini-quizify-433001",
         "location": "us-central1"
     }
     
