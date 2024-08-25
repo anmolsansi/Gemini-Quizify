@@ -86,7 +86,7 @@ class QuizGenerator:
         from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
         # Enable a Retriever
-        retriever = self.vectorstore.as_retriever()
+        retriever = self.vectorstore.db.as_retriever()
         
         # Use the system template to create a PromptTemplate
         prompt = PromptTemplate.from_template(self.system_template)
@@ -125,25 +125,32 @@ class QuizGenerator:
 
         for _ in range(self.num_questions):
             ##### YOUR CODE HERE #####
-            question_str = # Use class method to generate question
-            
+            question_str = self.generate_question_with_vectorstore() # Use class method to generate question
+
+
             ##### YOUR CODE HERE #####
             try:
                 # Convert the JSON String to a dictionary
+                question = json.loads(question_str)
             except json.JSONDecodeError:
+                try:
+                    question = json.loads(question_str[7:-3])
+                except Exception as e:
+                    print(e)
                 print("Failed to decode question JSON.")
-                continue  # Skip this iteration if JSON decoding fails
+                continue
             ##### YOUR CODE HERE #####
 
             ##### YOUR CODE HERE #####
             # Validate the question using the validate_question method
             if self.validate_question(question):
                 print("Successfully generated unique question")
+                self.question_bank.append(question)
                 # Add the valid and unique question to the bank
             else:
                 print("Duplicate or invalid question detected.")
             ##### YOUR CODE HERE #####
-
+            
         return self.question_bank
 
     def validate_question(self, question: dict) -> bool:
@@ -170,6 +177,17 @@ class QuizGenerator:
         # Consider missing 'question' key as invalid in the dict object
         # Check if a question with the same text already exists in the self.question_bank
         ##### YOUR CODE HERE #####
+        
+        is_unique = True
+        question_text = question['question']
+        # Consider missing 'question' key as invalid in the dict object
+        if question_text is None:
+            is_unique = False
+        # Check if a question with the same text already exists in the self.question_bank
+        for existing_question in self.question_bank:
+            if existing_question['question'] == question_text:
+                is_unique = False
+        
         return is_unique
 
 
@@ -178,7 +196,7 @@ if __name__ == "__main__":
     
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
+        "project": "gemini-quizify-433001",
         "location": "us-central1"
     }
     
@@ -211,6 +229,7 @@ if __name__ == "__main__":
                 # Test the Quiz Generator
                 generator = QuizGenerator(topic_input, questions, chroma_creator)
                 question_bank = generator.generate_quiz()
+                
                 question = question_bank[0]
 
     if question_bank:
