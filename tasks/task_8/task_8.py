@@ -134,11 +134,16 @@ class QuizGenerator:
                 question = json.loads(question_str)
             except json.JSONDecodeError:
                 try:
-                    question = json.loads(question_str[7:-3])
-                except Exception as e:
-                    print(e)
-                print("Failed to decode question JSON.")
-                continue
+                    try:
+                        question = json.loads(question_str[7:-3])
+                    except Exception as e:
+                        print(e)
+                        print("Failed to decode question JSON.")
+                    
+                except:
+                    print(question_str)
+                    continue
+                
             ##### YOUR CODE HERE #####
 
             ##### YOUR CODE HERE #####
