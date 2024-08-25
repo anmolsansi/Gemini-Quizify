@@ -72,6 +72,9 @@ class QuizGenerator:
         """
         self.llm = VertexAI(
             ############# YOUR CODE HERE ############
+            model_name="gemini-pro",
+            temperature=0.4,
+            max_output_tokens=500
         )
         
     def generate_question_with_vectorstore(self):
@@ -104,6 +107,14 @@ class QuizGenerator:
         # Raise an error if the vectorstore is not initialized on the class
         ############# YOUR CODE HERE ############
         
+        
+        # Initialize the LLM from the 'init_llm' method if not already initialized
+        if not self.llm:
+            self.init_llm()
+        # Raise an error if the vectorstore is not initialized on the class
+        if not self.vectorstore:
+            raise ValueError("Vectorstore is not initialized. Please initialize the vectorstore before proceeding.")
+
         from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
         ############# YOUR CODE HERE ############
@@ -116,6 +127,12 @@ class QuizGenerator:
         # HINT: Use the .from_template method on the PromptTemplate class and pass in the system template
         ############# YOUR CODE HERE ############
         
+        retriever = self.vectorstore.db.as_retriever()
+        
+        # Use the system template to create a PromptTemplate
+        prompt_template = PromptTemplate.from_template(self.system_template)
+        
+        
         # RunnableParallel allows Retriever to get relevant documents
         # RunnablePassthrough allows chain.invoke to send self.topic to LLM
         setup_and_retrieval = RunnableParallel(
@@ -126,6 +143,8 @@ class QuizGenerator:
         # Create a chain with the Retriever, PromptTemplate, and LLM
         # HINT: chain = RETRIEVER | PROMPT | LLM 
         ############# YOUR CODE HERE ############
+
+        chain = setup_and_retrieval | prompt_template | self.llm
 
         # Invoke the chain with the topic as input
         response = chain.invoke(self.topic)
@@ -141,7 +160,7 @@ if __name__ == "__main__":
     
     embed_config = {
         "model_name": "textembedding-gecko@003",
-        "project": "YOUR-PROJECT-ID-HERE",
+        "project": "gemini-quizify-433001",
         "location": "us-central1"
     }
     

@@ -79,7 +79,7 @@ if __name__ == "__main__":
             ####### YOUR CODE HERE #######
             
             topic_input = st.text_input("Topic for Generative Quiz")
-            no_of_questions = st.slider("Number of Questions", 1, 20, 10)
+            no_of_questions = st.slider("Number of Questions", 1, 10, 5)
                         
             submitted = st.form_submit_button("Generate a Quiz!")
             if submitted:
